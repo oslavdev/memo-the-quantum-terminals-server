@@ -8,12 +8,14 @@ export default {
   register: async (
     _: void,
     {
+      username,
       email,
       password,
       confirmPassword,
       firstName,
       lastName
     }: {
+      username: string,
       email: string;
       password: string;
       confirmPassword: string;
@@ -45,6 +47,7 @@ export default {
       }
 
       const resp:any = await User.create({
+        username,
         firstName,
         lastName,
         email,
@@ -62,8 +65,6 @@ export default {
           },
         };
       } 
-
-      const username = `${firstName} ${lastName}`
 
       await sendEmail(
         username,
