@@ -35,13 +35,24 @@ export default {
         };
       }
 
-      const checkUser: User | undefined = await User.findOne({ where: { email } });
-      if(checkUser){
+      const checkEmail: User | undefined = await User.findOne({ where: { email } });
+      if(checkEmail){
         return {
           user: null,
           error:{
             field:["email"],
             message:"Email exist"
+          },
+        };
+      }
+
+      const checkUser: User | undefined = await User.findOne({ where: { username } });
+      if(checkUser){
+        return {
+          user: null,
+          error:{
+            field:["username"],
+            message:"User with this name exist"
           },
         };
       }
