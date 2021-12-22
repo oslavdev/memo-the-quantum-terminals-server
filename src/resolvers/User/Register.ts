@@ -8,12 +8,14 @@ export default {
   register: async (
     _: void,
     {
+      username,
       email,
       password,
       confirmPassword,
       firstName,
       lastName
     }: {
+      username: string,
       email: string;
       password: string;
       confirmPassword: string;
@@ -45,10 +47,12 @@ export default {
       }
 
       const resp:any = await User.create({
+        username,
         firstName,
         lastName,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        confirmed: true
       }).save();
 
 
@@ -63,13 +67,11 @@ export default {
         };
       } 
 
-      const username = `${firstName} ${lastName}`
-
-      await sendEmail(
-        username,
-        email,
-        await createConfirmationUrl(resp.id)
-      );
+      // await sendEmail(
+      //   username,
+      //   email,
+      //   await createConfirmationUrl(resp.id)
+      // );
 
       return {
         user: resp.User,
