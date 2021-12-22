@@ -1,0 +1,11 @@
+# PROD
+node_modules
+dist
+
+# ENV
+.env
+
+# Logs
+error.log 
+yarn-error.log
+.snyk
