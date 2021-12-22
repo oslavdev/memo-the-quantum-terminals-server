@@ -51,7 +51,8 @@ export default {
         firstName,
         lastName,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        confirmed: true
       }).save();
 
 
@@ -66,11 +67,11 @@ export default {
         };
       } 
 
-      await sendEmail(
-        username,
-        email,
-        await createConfirmationUrl(resp.id)
-      );
+      // await sendEmail(
+      //   username,
+      //   email,
+      //   await createConfirmationUrl(resp.id)
+      // );
 
       return {
         user: resp.User,
