@@ -34,8 +34,8 @@ yarn dev
 
 ```
 
-Server will run on http://localhost:7100
-GraphQl playground http://localhost:7100/graphql
+Server will run on http://localhost:4000
+GraphQl playground http://localhost:4000/graphql
 
 **DEFAULT CLIENT HOST:** http://localhost:8080/
 
