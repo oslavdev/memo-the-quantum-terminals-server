@@ -8,7 +8,7 @@ import {Context} from '../context'
 export const rules = {
   isAuthenticatedUser: rule({ cache: 'contextual' })(
     (_parent, _args, ctx: Context): any => {
-      try { 
+      try {
         if (!ctx.userId) {
          return Error('Unauthenticated user!')
         }

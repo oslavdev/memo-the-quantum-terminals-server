@@ -5,7 +5,6 @@ import { extendType, nonNull, objectType, stringArg, unionType } from 'nexus';
 import * as TokenHelper from "../utils/token"
 import bcrypt from 'bcrypt';
 
-
 export const User = objectType({
   name: 'User',
   description: 'General User Response type.',
@@ -200,3 +199,40 @@ export const me = extendType({
     });
   },
 })
+
+export const login = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+export const logout = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+export const deleteMe = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+export const requestPasswordChange = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+export const validatePasswordChangeToken = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+export const updatePassword = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+export const updateEmail = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+
