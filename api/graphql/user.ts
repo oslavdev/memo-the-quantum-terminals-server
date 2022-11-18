@@ -1,51 +1,66 @@
 import * as Constants from '../constants';
+import * as JWT from 'jsonwebtoken'
 import * as Utils from '../utils';
-
 import { extendType, nonNull, objectType, stringArg, unionType } from 'nexus';
-
+import * as TokenHelper from "../utils/token"
 import bcrypt from 'bcrypt';
 
 export const User = objectType({
   name: 'User',
-  description: 'Basic user type',
+  description: 'General User Response type.',
   definition(t) {
-    t.nonNull.string('id');
+    t.nonNull.string('userId');
     t.nonNull.string('username');
     t.nonNull.string('email');
   },
 });
 
-export const ErrorBody = objectType({
-  name: 'ErrorBody',
-  description: 'Errors that return to submitted forms',
+
+export const Error = objectType({
+  name: 'Error',
+  description: 'General error',
   definition(t) {
-    t.nonNull.string('field');
-    t.nonNull.string('message');
+    t.string('message');
     t.nonNull.int('status');
   },
 });
+
+
+export const FieldErrorBody = objectType({
+  name: 'FieldErrorBody',
+  description: 'Errors that return to submitted forms',
+  definition(t) {
+    t.string('field');
+    t.string('message');
+    t.nonNull.int('status');
+  },
+});
+
+export const FieldError = objectType({
+  name: 'FieldError',
+  description: 'Errors that returns to submitted forms',
+  definition(t) {
+    t.nonNull.boolean('success');
+    t.field('error', { type: 'FieldErrorBody' });
+  },
+});
+
+/* #region Create User Mutation */
+
 
 export const SuccessResponse = objectType({
   name: 'SuccessResponse',
   description: 'Successful user response',
   definition(t) {
     t.nonNull.boolean('success');
-    t.field('user', { type: 'User' });
+    t.string('token')
   },
 });
 
-export const FieldError = objectType({
-  name: 'FieldError',
-  description: 'Errors that return to submitted forms',
-  definition(t) {
-    t.nonNull.boolean('success');
-    t.field('error', { type: 'ErrorBody' });
-  },
-});
 
-export const UserUnion = unionType({
-  name: 'UserUnion',
-  description: 'Union type to return either user or error',
+export const CreateUserResponse = unionType({
+  name: 'CreateUserResponse',
+  description: 'Union type to return either User or error on create user mutation.',
   definition(t) {
     t.members('SuccessResponse', 'FieldError');
   },
@@ -56,60 +71,14 @@ export const UserUnion = unionType({
   },
 });
 
-export const UsersQuery = extendType({
-  type: 'Query',
-  definition(t) {
-    t.nonNull.list.field('users', {
-      type: 'User',
-      resolve(_root, _args, ctx) {
-        //TODO: select only required fields
-        return ctx?.db?.users?.findMany({ where: { admin: false } }) || [];
-      },
-    });
-  },
-});
+/* #endregion */
 
-type User = {
-  username: string;
-  password: string;
-  email: string;
-  activated: boolean;
-};
 
-/**
- * @name UserMutation
- * 
- * This is a create user mutation
- * 
- * 
- * @example
- * mutation Mutation($username: String!, $email: String!, $password: String!, $confirmPassword: String!) {
-  createUser(username: $username, email: $email, password: $password, confirmPassword: $confirmPassword) {
-    ... on FieldError {
-      success
-      error {
-        field
-        message
-        status
-      }
-    }
-    ... on SuccessResponse {
-      success
-      user {
-        username
-        id
-        email
-      }
-    }
-  }
-}
-
- */
 export const UserMutation = extendType({
   type: 'Mutation',
   definition(t) {
     t.nonNull.field('createUser', {
-      type: 'UserUnion',
+      type: 'CreateUserResponse',
       description: 'This schema is for creating a new user',
       args: {
         username: nonNull(stringArg()),
@@ -117,7 +86,8 @@ export const UserMutation = extendType({
         password: nonNull(stringArg()),
         confirmPassword: nonNull(stringArg()),
       },
-      resolve: async (_root, args, ctx) => {
+      resolve: async (_root, args, ctx) =>{
+
         if (!args.password.match(Constants.PasswordPattern)) {
           return {
             __typename: 'FieldError',
@@ -173,17 +143,96 @@ export const UserMutation = extendType({
 
         const hashedPassword = await bcrypt.hash(args.password, 10);
 
-        const user: User = {
+        const userPayload = {
           username: args.username,
           password: hashedPassword,
           email: args.email,
           activated: true,
         };
 
-        const createdUser = await ctx.db.users.create({ data: user });
+        const createdUser = await ctx.db.users.create({ data: userPayload });
 
-        return { success: true, user: createdUser };
+        if(createdUser){
+          const accessToken = TokenHelper.generateAccessToken(createdUser.id)
+          return { 
+            success: true, 
+            token: accessToken 
+          };
+        }
+
+        return {
+          success: false,
+          error: {
+            message:
+              'Something went wrong! Please re-try again.',
+          },
+        }
+       
       },
     });
   },
 });
+
+export const me = extendType({
+  type: 'Query',
+  definition(t) {
+    t.field('me', {
+      type: 'User',
+      async resolve(_root, _args, ctx) {
+        
+        const user = await ctx.db.user.findUnique({
+          where: {
+            id: ctx.userId,
+          },
+        })
+        
+        if(!user){
+          return null
+        }
+
+        return{
+          username: user.username,
+          email: user.email,
+          userId: user.id
+        }
+      },
+    });
+  },
+})
+
+export const login = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+export const logout = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+export const deleteMe = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+export const requestPasswordChange = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+export const validatePasswordChangeToken = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+export const updatePassword = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+export const updateEmail = extendType({
+  type: 'Mutation',
+  definition(t) {}
+})
+
+

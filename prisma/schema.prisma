@@ -20,3 +20,9 @@ model users {
   activated Boolean
   blocked Boolean @default(false)
 }
+
+model user {
+  id    String    @id @default(uuid())
+  email String  @unique
+  username  String
+}

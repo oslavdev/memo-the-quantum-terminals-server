@@ -6,44 +6,44 @@ Client side: https://github.com/oslavdev/memo-the-quantum-terminals-client
 
 ![Alt text](readme/memo.gif?raw=true 'Cover')
 
-### Technologies
+# Stack
 
-- Apollo
-- TypeScript
-- GraphQL
-- Node.js
-- Express
-- PostgreSQL
-- Redis
-- TypeORM
-- Docker
-- Jest
+**Backend**: Node.js, Nexus, Prisma, Typescript, Posgres, Apollo GraphQl
 
-### Run
+**Frontend**: React.js, Typescript, Apollo GraphQL
 
-Copy .env.example to .env and change evnironment variables to your liking
+**DevOps**: Docker
 
-```sh
-docker-compose up
+# Usage
 
-or
+**Requirements**: Docker, Docker Compose, Yarn, Node.js
 
-yarn
+**Setup**
 
-yarn dev
+- `make setup`
+  - Set "Databse URL". Example: `postgres://postgres:postgres@127.0.0.1:5432/database`
+  - Set JWT_SECRET
+  - Set PORT the server will run on
+  - Set CLIENT_URL for cors
 
-```
+**Development**
 
-Server will run on http://localhost:4000
-GraphQl playground http://localhost:4000/graphql
+- `make server` sStarts development server, http://localhost:4000/graphql)
+
 
 **DEFAULT CLIENT HOST:** http://localhost:8080/
 
-### Environments
+# Environments
 
 See: .env.example
 
-### Testing
+# DB Migration
+
+```bash
+    npx prisma migrate dev --name init --preview-feature
+```
+
+# Testing
 
 ```sh
 	$ yarn test
@@ -62,3 +62,5 @@ See: .env.example
 ```sh
 	$ yarn test:update
 ```
+
+

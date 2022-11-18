@@ -4,7 +4,7 @@
  */
 
 
-import type { Context } from "./api/context"
+import type { Context as ctx } from "./api/context"
 
 
 
@@ -28,24 +28,28 @@ export interface NexusGenScalars {
 }
 
 export interface NexusGenObjects {
-  ErrorBody: { // root type
-    field: string; // String!
-    message: string; // String!
+  Error: { // root type
+    message?: string | null; // String
     status: number; // Int!
   }
   FieldError: { // root type
-    error?: NexusGenRootTypes['ErrorBody'] | null; // ErrorBody
+    error?: NexusGenRootTypes['FieldErrorBody'] | null; // FieldErrorBody
     success: boolean; // Boolean!
+  }
+  FieldErrorBody: { // root type
+    field?: string | null; // String
+    message?: string | null; // String
+    status: number; // Int!
   }
   Mutation: {};
   Query: {};
   SuccessResponse: { // root type
     success: boolean; // Boolean!
-    user?: NexusGenRootTypes['User'] | null; // User
+    token?: string | null; // String
   }
   User: { // root type
     email: string; // String!
-    id: string; // String!
+    userId: string; // String!
     username: string; // String!
   }
 }
@@ -54,7 +58,7 @@ export interface NexusGenInterfaces {
 }
 
 export interface NexusGenUnions {
-  UserUnion: NexusGenRootTypes['FieldError'] | NexusGenRootTypes['SuccessResponse'];
+  CreateUserResponse: NexusGenRootTypes['FieldError'] | NexusGenRootTypes['SuccessResponse'];
 }
 
 export type NexusGenRootTypes = NexusGenObjects & NexusGenUnions
@@ -62,55 +66,63 @@ export type NexusGenRootTypes = NexusGenObjects & NexusGenUnions
 export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars
 
 export interface NexusGenFieldTypes {
-  ErrorBody: { // field return type
-    field: string; // String!
-    message: string; // String!
+  Error: { // field return type
+    message: string | null; // String
     status: number; // Int!
   }
   FieldError: { // field return type
-    error: NexusGenRootTypes['ErrorBody'] | null; // ErrorBody
+    error: NexusGenRootTypes['FieldErrorBody'] | null; // FieldErrorBody
     success: boolean; // Boolean!
   }
+  FieldErrorBody: { // field return type
+    field: string | null; // String
+    message: string | null; // String
+    status: number; // Int!
+  }
   Mutation: { // field return type
-    createUser: NexusGenRootTypes['UserUnion']; // UserUnion!
+    createUser: NexusGenRootTypes['CreateUserResponse']; // CreateUserResponse!
   }
   Query: { // field return type
-    users: Array<NexusGenRootTypes['User'] | null>; // [User]!
+    me: NexusGenRootTypes['User'] | null; // User
   }
   SuccessResponse: { // field return type
     success: boolean; // Boolean!
-    user: NexusGenRootTypes['User'] | null; // User
+    token: string | null; // String
   }
   User: { // field return type
     email: string; // String!
-    id: string; // String!
+    userId: string; // String!
     username: string; // String!
   }
 }
 
 export interface NexusGenFieldTypeNames {
-  ErrorBody: { // field return type name
-    field: 'String'
+  Error: { // field return type name
     message: 'String'
     status: 'Int'
   }
   FieldError: { // field return type name
-    error: 'ErrorBody'
+    error: 'FieldErrorBody'
     success: 'Boolean'
   }
+  FieldErrorBody: { // field return type name
+    field: 'String'
+    message: 'String'
+    status: 'Int'
+  }
   Mutation: { // field return type name
-    createUser: 'UserUnion'
+    createUser: 'CreateUserResponse'
   }
   Query: { // field return type name
-    users: 'User'
+    me: 'User'
   }
   SuccessResponse: { // field return type name
     success: 'Boolean'
-    user: 'User'
+    token: 'String'
   }
   User: { // field return type name
     email: 'String'
-    id: 'String'
+    userId: 'String'
     username: 'String'
   }
 }
@@ -127,7 +139,7 @@ export interface NexusGenArgTypes {
 }
 
 export interface NexusGenAbstractTypeMembers {
-  UserUnion: "FieldError" | "SuccessResponse"
+  CreateUserResponse: "FieldError" | "SuccessResponse"
 }
 
 export interface NexusGenTypeInterfaces {
@@ -147,7 +159,7 @@ export type NexusGenUnionNames = keyof NexusGenUnions;
 
 export type NexusGenObjectsUsingAbstractStrategyIsTypeOf = never;
 
-export type NexusGenAbstractsUsingStrategyResolveType = "UserUnion";
+export type NexusGenAbstractsUsingStrategyResolveType = "CreateUserResponse";
 
 export type NexusGenFeaturesConfig = {
   abstractTypeStrategies: {
@@ -158,7 +170,7 @@ export type NexusGenFeaturesConfig = {
 }
 
 export interface NexusGenTypes {
-  context: Context;
+  context: ctx;
   inputTypes: NexusGenInputs;
   rootTypes: NexusGenRootTypes;
   inputTypeShapes: NexusGenInputs & NexusGenEnums & NexusGenScalars;

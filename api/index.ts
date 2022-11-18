@@ -1,43 +1,56 @@
-import { apolloServer } from './server';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
-import winston from 'winston';
+import {ApolloServer} from '@apollo/server'
+import { expressMiddleware } from '@apollo/server/express4';
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+// import { ApolloServerPluginSchemaReporting } from '@apollo/server/plugin/schemaReporting';
+import { ApolloServerPluginInlineTrace } from '@apollo/server/plugin/inlineTrace';
 
-const server = async () => {
-  const app = await express();
+import http from 'http';
+import { context, Context } from './context';
+import { schema } from './schema';
+// import { permissions } from './utils/shield';
+import { json } from 'body-parser';
+import {customLogger} from "./plugins/custom-logger"
 
-  await apolloServer.start();
-  apolloServer.applyMiddleware({ app });
+interface ServerContext extends Context {
+   token?: String;
+}
 
-  const PORT = process.env.PORT || 4000;
+interface Server {
+  start: () => void
+}
 
-  const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.json(),
-    defaultMeta: { service: 'user-service' },
-    transports: [
-      new winston.transports.File({
-        filename: './logs/error.log',
-        level: 'error',
+async function startApolloServer() {
+  
+  const app = express();
+  const httpServer = http.createServer(app);
+
+  const server = new ApolloServer<ServerContext>({ 
+    schema, 
+    csrfPrevention: true,
+    cache: 'bounded',
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      // ApolloServerPluginSchemaReporting(),
+      ApolloServerPluginInlineTrace({
+        includeErrors: { transform: err => err },
       }),
-      new winston.transports.File({ filename: './logs/combined.log' }),
+      customLogger
     ],
-  });
+  }) as Server;
 
-  if (process.env.NODE_ENV !== 'production') {
-    logger.add(
-      new winston.transports.Console({
-        format: winston.format.simple(),
-      })
-    );
-  }
+  // Required logic for integrating with Express
+  await server.start();
 
   app.use(
-    cors({
-      credentials: true, // Enables HTTP cookies over CORS
-      origin: process.env.CLIENT_URL,
-    })
+    '/graphql',
+    cors<cors.CorsRequest>(),
+    json(),
+    expressMiddleware(server, {
+      context: async ({ req }) => ({ token: req.headers.token, ...context }),
+    }),
   );
 
   app.use(
@@ -50,13 +63,13 @@ const server = async () => {
 
   app.disable('x-powered-by');
 
-  app.listen(PORT, () => {
-    // eslint-disable-next-line no-console
-    console.log(`🚀 Game Server ready at http://localhost:${PORT}/graphql`);
-  });
-};
+  app.get('/health', (req, res) => {
+    res.status(200).send('Server is healthy!');
+  })
 
-server().catch((err) => {
-  // eslint-disable-next-line no-console
-  console.error(err);
-});
+  const PORT = process.env.PORT || 4000;
+  await new Promise((resolve:any) => app.listen({ port: PORT }, resolve));
+  console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
+}
+
+startApolloServer()
