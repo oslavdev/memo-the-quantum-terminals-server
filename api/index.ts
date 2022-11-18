@@ -50,6 +50,10 @@ const server = async () => {
 
   app.disable('x-powered-by');
 
+  app.get('/health', (req, res) => {
+    res.status(200).send('Server is healthy!');
+  })
+
   app.listen(PORT, () => {
     // eslint-disable-next-line no-console
     console.log(`🚀 Game Server ready at http://localhost:${PORT}/graphql`);
